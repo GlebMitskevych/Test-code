@@ -59,6 +59,7 @@ class SpaceWars:
         #Настройте пайгейма
         self.input_mode = 'joy'
         pygame.init ()
+        pygame.joystick.init()
         try:
             self.joystick = pygame.joystick.Joystick(0)
         except pygame.error:
@@ -163,7 +164,31 @@ class SpaceWars:
                     if event.key == pygame.K_KP_MINUS:
                         self.fps -= 1
 
+                #! JOYPAD CONTROL
+                if self.input_mode == 'joy':
+                    if event.type == pygame.JOYAXISMOTION:
+                        x_val = int(self.joystick.get_axis(0)*10)/10
+                        y_val = int(self.joystick.get_axis(1)*10)/10
 
+                        if abs(x_val) > 0:
+                            self.myship.x_speed = x_val * 5
+                            self.myship.is_horizontal_breaking = False
+                            for star in self.background_stars:
+                                star.x_speed = x_val * 3
+                        else:
+                            self.myship.is_horizontal_breaking = True
+                            for star in self.background_stars:
+                                star.x_speed = 0
+
+                        if abs(y_val) > 0:
+                            self.myship.y_speed = y_val * 5
+                            self.myship.is_vertical_breaking = False
+                            for star in self.background_stars:
+                                star.y_speed = y_val * 3
+                        else:
+                            self.myship.is_vertical_breaking = True
+                            for star in self.background_stars:
+                                star.y_speed = 0
 #!Кнопка огня
                     if event.type == pygame.JOYBUTTONDOWN:
                         self.mouse_down = True
@@ -329,21 +354,21 @@ class SpaceWars:
                         self.draw_has_been_hit_screen ()
 
                 #!Нарисованое Окно
-
+                pygame.display.update ()
 
                 dt = self.clock.tick (self.fps)
 
                 self.game_over_screen()
 
 
-    def init_warp_mode(self):
+def init_warp_mode(self):
         for enemy in self.enemy_objects:
             enemy.set_fly_by_mode(multi=2)
         for star in self.background_stars:
             self.background_stars.remove(star)
 
 
-    def draw_has_been_hit_screen(self):
+def draw_has_been_hit_screen(self):
 
         pygame.draw.lines(self.window, RED, True,
                           [(0, 0), (WINDOWWIDTH, 0), (WINDOWWIDTH, WINDOWHEIGHT), (0, WINDOWHEIGHT)], 5)
@@ -366,7 +391,7 @@ class SpaceWars:
 
         pygame.display.update()
 
-    def draw_infos(self):
+def draw_infos(self):
         font = pygame.font.SysFont("Arial", 18)
 
         text = "Score: " + str(self.score)
@@ -381,7 +406,7 @@ class SpaceWars:
         renderText = font.render(text, True, WHITE)
         self.window.blit(renderText, (WINDOWWIDTH - 100, WINDOWHEIGHT - 30))
 
-    def game_over_screen (self):
+def game_over_screen (self):
         try:
             with open("highscore.txt", "r") as hs_file:
                 hs = int(hs_file.read())
@@ -593,8 +618,8 @@ class EnemyObject(Sprite):
 
 
 class Explosion(Sprite):
-    def __init__ (self, init_x_pos, init_y_pos, color):
-        super(Explosion, self).__init__()
+    def init (self, init_x_pos, init_y_pos, color):
+        super(Explosion, self).init()
         self.color = color
         self.size = random.randint(10, 20)
         self.y_speed = random.randint(-20, 20)
@@ -608,7 +633,7 @@ class Explosion(Sprite):
 
         self.rect = pygame.Rect(init_x_pos, init_y_pos, self.size, self.size)
 
-    def update(self):
+def update(self):
         self.rect.x += self.y_speed
         self.rect.y += self.x_speed
         self.life -= 1
@@ -619,8 +644,8 @@ class Explosion(Sprite):
 
 
 class Splash(Sprite):
-    def __init__ (self, x_pos, y_pos, size):
-        super(Splash, self).__init__()
+    def init (self, x_pos, y_pos, size):
+        super(Splash, self).init()
         self.life = random.randint(30, 60)  
         self.image = pygame.transform.rotate(SPLASH0, random.randint(0,360))
         self.size = size
@@ -633,13 +658,12 @@ class Splash(Sprite):
 
 class Crack(Sprite):
     def init(self, x_pos, y_pos):
-        super(Crack, self).__init__()
+        super(Crack, self).init()
         self.image = pygame.transform.rotate(CRACK0, random.randint(0, 360))
         self.size = 100
         self.rect = pygame.Rect(x_pos, y_pos, self.size, self.size)
         self.life = 100
 
 
-if __name__ == "menu":
-    space = SpaceWars(fps=60, init_lifes=5, enemies=5, invincible=False)
-        
+    if __name__ == "__main__":
+        main_menu()
